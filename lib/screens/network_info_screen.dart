@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/src/rust/api/network.dart';
+import 'package:p2p_chat/utils/network_data_cache.dart';
 
 class NetworkInfoScreen extends StatefulWidget {
   const NetworkInfoScreen({super.key});
@@ -14,6 +15,8 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
   bool _isLoading = false;
   final TextEditingController _peerIpController = TextEditingController();
   bool? _isSameSubnet;
+  int? _cacheAgeMinutes;
+  final _cache = NetworkDataCache();
 
   @override
   void initState() {
@@ -27,10 +30,27 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
     super.dispose();
   }
 
-  Future<void> _loadNetworkInfo() async {
+  Future<void> _loadNetworkInfo({bool forceRefresh = false}) async {
     setState(() => _isLoading = true);
     try {
-      final info = getNetworkInfo();
+      // Try to get from cache first
+      NetworkInfo? info;
+      
+      if (!forceRefresh) {
+        info = await _cache.getCachedNetworkData();
+        if (info != null) {
+          _cacheAgeMinutes = await _cache.getCacheAgeMinutes();
+        }
+      }
+      
+      // If no cache or force refresh, fetch new data
+      if (info == null || forceRefresh) {
+        info = getNetworkInfo();
+        // Cache the new data
+        await _cache.cacheNetworkData(info);
+        _cacheAgeMinutes = 0;
+      }
+      
       setState(() {
         _networkInfo = info;
         _isLoading = false;
@@ -198,12 +218,63 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(
-                    Icons.network_check,
-                    size: 80,
-                    color: Colors.deepPurple,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Icon(
+                        Icons.network_check,
+                        size: 60,
+                        color: Colors.deepPurple,
+                      ),
+                      if (_cacheAgeMinutes != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _cacheAgeMinutes! < 5
+                                ? Colors.green.withOpacity(0.2)
+                                : Colors.orange.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _cacheAgeMinutes! < 5
+                                  ? Colors.green
+                                  : Colors.orange,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: _cacheAgeMinutes! < 5
+                                    ? Colors.green
+                                    : Colors.orange,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Cached ${_cacheAgeMinutes}m ago',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _cacheAgeMinutes! < 5
+                                      ? Colors.green
+                                      : Colors.orange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: () => _loadNetworkInfo(forceRefresh: true),
+                        tooltip: 'Refresh',
+                        color: Colors.deepPurple,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   const Text(
                     'Your Network Addresses',
                     style: TextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/src/rust/api/identity.dart';
 import 'package:p2p_chat/screens/home_screen.dart';
+import 'package:p2p_chat/utils/network_data_cache.dart';
 
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
@@ -126,12 +127,17 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _hasConfirmed
-                    ? () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
-                          ),
-                        );
+                    ? () async {
+                        // Store seed phrase securely
+                        await NetworkDataCache().storeSeedPhrase(_seedPhrase!);
+                        
+                        if (mounted) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const HomeScreen(),
+                            ),
+                          );
+                        }
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
