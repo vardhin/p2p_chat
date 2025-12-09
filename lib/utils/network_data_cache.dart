@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:typed_data';  // Add this import for Uint8List
+import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -15,7 +15,8 @@ class NetworkDataCache {
   final _secureStorage = const FlutterSecureStorage();
   
   static const String _seedPhraseKey = 'user_seed_phrase';
-  static const int _cacheValidityMinutes = 30; // Cache valid for 30 minutes
+  static const String _identityExistsKey = 'identity_exists';
+  static const int _cacheValidityMinutes = 30;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -43,11 +44,24 @@ class NetworkDataCache {
   /// Store seed phrase securely
   Future<void> storeSeedPhrase(String seedPhrase) async {
     await _secureStorage.write(key: _seedPhraseKey, value: seedPhrase);
+    await _secureStorage.write(key: _identityExistsKey, value: 'true');
   }
 
   /// Retrieve seed phrase
   Future<String?> getSeedPhrase() async {
     return await _secureStorage.read(key: _seedPhraseKey);
+  }
+
+  /// Check if identity exists
+  Future<bool> hasIdentity() async {
+    final exists = await _secureStorage.read(key: _identityExistsKey);
+    return exists == 'true';
+  }
+
+  /// Verify seed phrase matches stored one
+  Future<bool> verifySeedPhrase(String seedPhrase) async {
+    final stored = await getSeedPhrase();
+    return stored == seedPhrase;
   }
 
   /// Cache network data with encryption
@@ -187,5 +201,6 @@ class NetworkDataCache {
   Future<void> clearAll() async {
     await clearCache();
     await _secureStorage.delete(key: _seedPhraseKey);
+    await _secureStorage.delete(key: _identityExistsKey);
   }
 }

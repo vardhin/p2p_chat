@@ -1,7 +1,141 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:p2p_chat/utils/network_data_cache.dart';
+import 'package:p2p_chat/utils/pin_manager.dart';
+import 'package:p2p_chat/widgets/pin_setup_dialog.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _autoLockEnabled = false;
+  final _cache = NetworkDataCache();
+  final _pinManager = PinManager();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final enabled = await _pinManager.isAutoLockEnabled();
+    setState(() => _autoLockEnabled = enabled);
+  }
+
+  Future<void> _showSeedPhrase() async {
+    final seedPhrase = await _cache.getSeedPhrase();
+    
+    if (seedPhrase == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No seed phrase found')),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Your Seed Phrase'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.deepPurple),
+                ),
+                child: SelectableText(
+                  seedPhrase,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '⚠️ Keep this safe! Never share it with anyone.',
+                style: TextStyle(color: Colors.orange, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: seedPhrase));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Copied to clipboard')),
+                );
+              },
+              child: const Text('Copy'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _toggleAutoLock(bool value) async {
+    if (value) {
+      // Enable auto-lock - need to set up PIN first
+      final hasPin = await _pinManager.hasStoredPin();
+      
+      if (!hasPin) {
+        // Show PIN setup dialog
+        final result = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const PinSetupDialog(),
+        );
+
+        if (result == true) {
+          await _pinManager.enableAutoLock();
+          setState(() => _autoLockEnabled = true);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Auto-lock enabled')),
+            );
+          }
+        }
+      } else {
+        await _pinManager.enableAutoLock();
+        setState(() => _autoLockEnabled = true);
+      }
+    } else {
+      // Disable auto-lock
+      await _pinManager.disableAutoLock();
+      setState(() => _autoLockEnabled = false);
+    }
+  }
+
+  Future<void> _openGitHub() async {
+    final uri = Uri.parse('https://github.com/vardhin/p2p_chat');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open GitHub')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +154,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.fingerprint,
                 title: 'View Seed Phrase',
                 subtitle: 'Backup your identity',
-                onTap: () {
-                  // TODO: Show seed phrase
-                },
+                onTap: _showSeedPhrase,
               ),
               _buildListTile(
                 icon: Icons.key,
@@ -30,6 +162,9 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'Export cryptographic keys',
                 onTap: () {
                   // TODO: Export keys
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Coming soon!')),
+                  );
                 },
               ),
             ],
@@ -41,13 +176,27 @@ class SettingsScreen extends StatelessWidget {
               _buildListTile(
                 icon: Icons.lock,
                 title: 'Auto-lock',
-                subtitle: 'Lock app after inactivity',
+                subtitle: 'Lock app with PIN after inactivity',
                 trailing: Switch(
-                  value: true,
-                  onChanged: (value) {
-                    // TODO: Toggle auto-lock
-                  },
+                  value: _autoLockEnabled,
+                  onChanged: _toggleAutoLock,
                 ),
+              ),
+              _buildListTile(
+                icon: Icons.pin,
+                title: 'Change PIN',
+                subtitle: 'Update your lock PIN',
+                onTap: () async {
+                  final result = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => const PinSetupDialog(),
+                  );
+                  if (result == true && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('PIN updated')),
+                    );
+                  }
+                },
               ),
               _buildListTile(
                 icon: Icons.visibility_off,
@@ -56,16 +205,23 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: false,
                   onChanged: (value) {
-                    // TODO: Toggle IP hiding
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Coming soon!')),
+                    );
                   },
                 ),
               ),
               _buildListTile(
                 icon: Icons.delete_forever,
-                title: 'Clear Chat History',
-                subtitle: 'Delete all conversations',
-                onTap: () {
-                  // TODO: Clear history
+                title: 'Clear Cache',
+                subtitle: 'Delete cached network data',
+                onTap: () async {
+                  await _cache.clearCache();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Cache cleared')),
+                    );
+                  }
                 },
               ),
             ],
@@ -79,7 +235,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Port Settings',
                 subtitle: 'Configure P2P ports',
                 onTap: () {
-                  // TODO: Port settings
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Coming soon!')),
+                  );
                 },
               ),
               _buildListTile(
@@ -87,7 +245,9 @@ class SettingsScreen extends StatelessWidget {
                 title: 'STUN/TURN Servers',
                 subtitle: 'NAT traversal configuration',
                 onTap: () {
-                  // TODO: Server settings
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Coming soon!')),
+                  );
                 },
               ),
             ],
@@ -104,10 +264,8 @@ class SettingsScreen extends StatelessWidget {
               _buildListTile(
                 icon: Icons.code,
                 title: 'Open Source',
-                subtitle: 'View on GitHub',
-                onTap: () {
-                  // TODO: Open GitHub
-                },
+                subtitle: 'github.com/vardhin/p2p_chat',
+                onTap: _openGitHub,
               ),
             ],
           ),
@@ -116,7 +274,6 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ElevatedButton.icon(
               onPressed: () {
-                // TODO: Reset app
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -130,9 +287,15 @@ class SettingsScreen extends StatelessWidget {
                         child: const Text('Cancel'),
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement reset
-                          Navigator.pop(context);
+                        onPressed: () async {
+                          await _cache.clearAll();
+                          await _pinManager.removePin();
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('App reset complete')),
+                            );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,

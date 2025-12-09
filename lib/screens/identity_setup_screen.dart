@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/src/rust/api/identity.dart';
 import 'package:p2p_chat/screens/home_screen.dart';
-import 'package:p2p_chat/utils/network_data_cache.dart';
+import 'package:p2p_chat/utils/identity_manager.dart';
+import 'package:p2p_chat/utils/pin_manager.dart';
+import 'package:p2p_chat/widgets/pin_setup_dialog.dart';
 
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
@@ -12,9 +14,16 @@ class IdentitySetupScreen extends StatefulWidget {
 }
 
 class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
+  final _nameController = TextEditingController(text: 'My Identity');
   String? _seedPhrase;
   bool _isRevealed = false;
   bool _hasConfirmed = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   void _generateSeedPhrase() {
     setState(() {
@@ -36,6 +45,24 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     }
   }
 
+  Future<void> _continue() async {
+    // Store identity
+    await IdentityManager().addIdentity(_nameController.text.trim(), _seedPhrase!);
+    
+    // Prompt to set up PIN
+    if (mounted) {
+      final pinSet = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const PinSetupDialog(),
+      );
+
+      if (pinSet == true && mounted) {
+        Navigator.of(context).pop(true); // Return success
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +70,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         title: const Text('Setup Identity'),
         backgroundColor: Colors.deepPurple,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,11 +89,20 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Identity Name',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+            const SizedBox(height: 20),
             if (_seedPhrase == null)
               ElevatedButton.icon(
                 onPressed: _generateSeedPhrase,
                 icon: const Icon(Icons.add_circle),
-                label: const Text('Generate New Identity'),
+                label: const Text('Generate Seed Phrase'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                   backgroundColor: Colors.deepPurple,
@@ -126,20 +162,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: _hasConfirmed
-                    ? () async {
-                        // Store seed phrase securely
-                        await NetworkDataCache().storeSeedPhrase(_seedPhrase!);
-                        
-                        if (mounted) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => const HomeScreen(),
-                            ),
-                          );
-                        }
-                      }
-                    : null,
+                onPressed: _hasConfirmed ? _continue : null,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                   backgroundColor: Colors.green,
