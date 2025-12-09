@@ -3,6 +3,8 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/identity.dart';
+import 'api/network.dart';
 import 'api/simple.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -66,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -1918914929;
+  int get rustContentHash => -1287076031;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -77,9 +79,34 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  bool crateApiNetworkAreOnSameSubnet({
+    required String ip1,
+    required String ip2,
+    required String subnetMask,
+  });
+
+  Uint8List crateApiIdentityDeriveSeedFromPhrase({
+    required String phrase,
+    String? passphrase,
+  });
+
+  String crateApiIdentityGenerateSeedPhrase();
+
+  String? crateApiNetworkGetLocalIpv4Address();
+
+  String? crateApiNetworkGetLocalIpv6Address();
+
+  NetworkInfo crateApiNetworkGetNetworkInfo();
+
+  String? crateApiNetworkGetPublicIpv4Address();
+
+  String? crateApiNetworkGetPublicIpv6Address();
+
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
+
+  bool crateApiIdentityValidateSeedPhrase({required String phrase});
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -91,13 +118,207 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  bool crateApiNetworkAreOnSameSubnet({
+    required String ip1,
+    required String ip2,
+    required String subnetMask,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(ip1, serializer);
+          sse_encode_String(ip2, serializer);
+          sse_encode_String(subnetMask, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkAreOnSameSubnetConstMeta,
+        argValues: [ip1, ip2, subnetMask],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkAreOnSameSubnetConstMeta =>
+      const TaskConstMeta(
+        debugName: "are_on_same_subnet",
+        argNames: ["ip1", "ip2", "subnetMask"],
+      );
+
+  @override
+  Uint8List crateApiIdentityDeriveSeedFromPhrase({
+    required String phrase,
+    String? passphrase,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(phrase, serializer);
+          sse_encode_opt_String(passphrase, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiIdentityDeriveSeedFromPhraseConstMeta,
+        argValues: [phrase, passphrase],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiIdentityDeriveSeedFromPhraseConstMeta =>
+      const TaskConstMeta(
+        debugName: "derive_seed_from_phrase",
+        argNames: ["phrase", "passphrase"],
+      );
+
+  @override
+  String crateApiIdentityGenerateSeedPhrase() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiIdentityGenerateSeedPhraseConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiIdentityGenerateSeedPhraseConstMeta =>
+      const TaskConstMeta(debugName: "generate_seed_phrase", argNames: []);
+
+  @override
+  String? crateApiNetworkGetLocalIpv4Address() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkGetLocalIpv4AddressConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkGetLocalIpv4AddressConstMeta =>
+      const TaskConstMeta(debugName: "get_local_ipv4_address", argNames: []);
+
+  @override
+  String? crateApiNetworkGetLocalIpv6Address() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkGetLocalIpv6AddressConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkGetLocalIpv6AddressConstMeta =>
+      const TaskConstMeta(debugName: "get_local_ipv6_address", argNames: []);
+
+  @override
+  NetworkInfo crateApiNetworkGetNetworkInfo() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_network_info,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkGetNetworkInfoConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkGetNetworkInfoConstMeta =>
+      const TaskConstMeta(debugName: "get_network_info", argNames: []);
+
+  @override
+  String? crateApiNetworkGetPublicIpv4Address() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkGetPublicIpv4AddressConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkGetPublicIpv4AddressConstMeta =>
+      const TaskConstMeta(debugName: "get_public_ipv4_address", argNames: []);
+
+  @override
+  String? crateApiNetworkGetPublicIpv6Address() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_opt_String,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiNetworkGetPublicIpv6AddressConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiNetworkGetPublicIpv6AddressConstMeta =>
+      const TaskConstMeta(debugName: "get_public_ipv6_address", argNames: []);
+
+  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -122,7 +343,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 10,
             port: port_,
           );
         },
@@ -140,6 +361,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSimpleInitAppConstMeta =>
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
+  @override
+  bool crateApiIdentityValidateSeedPhrase({required String phrase}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(phrase, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiIdentityValidateSeedPhraseConstMeta,
+        argValues: [phrase],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiIdentityValidateSeedPhraseConstMeta =>
+      const TaskConstMeta(
+        debugName: "validate_seed_phrase",
+        argNames: ["phrase"],
+      );
+
   @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -147,9 +394,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  NetworkInfo dco_decode_network_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return NetworkInfo(
+      localIpv4: dco_decode_opt_String(arr[0]),
+      localIpv6: dco_decode_opt_String(arr[1]),
+      publicIpv4: dco_decode_opt_String(arr[2]),
+      publicIpv6: dco_decode_opt_String(arr[3]),
+      subnetMask: dco_decode_opt_String(arr[4]),
+      gateway: dco_decode_opt_String(arr[5]),
+      networkPrefix: dco_decode_opt_String(arr[6]),
+      interfaceName: dco_decode_opt_String(arr[7]),
+      macAddress: dco_decode_opt_String(arr[8]),
+      broadcastAddress: dco_decode_opt_String(arr[9]),
+    );
+  }
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
   }
 
   @protected
@@ -172,10 +451,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  NetworkInfo sse_decode_network_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_localIpv4 = sse_decode_opt_String(deserializer);
+    var var_localIpv6 = sse_decode_opt_String(deserializer);
+    var var_publicIpv4 = sse_decode_opt_String(deserializer);
+    var var_publicIpv6 = sse_decode_opt_String(deserializer);
+    var var_subnetMask = sse_decode_opt_String(deserializer);
+    var var_gateway = sse_decode_opt_String(deserializer);
+    var var_networkPrefix = sse_decode_opt_String(deserializer);
+    var var_interfaceName = sse_decode_opt_String(deserializer);
+    var var_macAddress = sse_decode_opt_String(deserializer);
+    var var_broadcastAddress = sse_decode_opt_String(deserializer);
+    return NetworkInfo(
+      localIpv4: var_localIpv4,
+      localIpv6: var_localIpv6,
+      publicIpv4: var_publicIpv4,
+      publicIpv6: var_publicIpv6,
+      subnetMask: var_subnetMask,
+      gateway: var_gateway,
+      networkPrefix: var_networkPrefix,
+      interfaceName: var_interfaceName,
+      macAddress: var_macAddress,
+      broadcastAddress: var_broadcastAddress,
+    );
+  }
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
   }
 
   @protected
@@ -196,15 +519,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
-  }
-
-  @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
   }
 
   @protected
@@ -215,6 +538,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_network_info(NetworkInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.localIpv4, serializer);
+    sse_encode_opt_String(self.localIpv6, serializer);
+    sse_encode_opt_String(self.publicIpv4, serializer);
+    sse_encode_opt_String(self.publicIpv6, serializer);
+    sse_encode_opt_String(self.subnetMask, serializer);
+    sse_encode_opt_String(self.gateway, serializer);
+    sse_encode_opt_String(self.networkPrefix, serializer);
+    sse_encode_opt_String(self.interfaceName, serializer);
+    sse_encode_opt_String(self.macAddress, serializer);
+    sse_encode_opt_String(self.broadcastAddress, serializer);
+  }
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
   }
 
   @protected
@@ -232,11 +580,5 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
-  }
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
   }
 }

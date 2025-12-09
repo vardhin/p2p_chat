@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:p2p_chat/src/rust/api/simple.dart';
+import 'package:p2p_chat/screens/identity_setup_screen.dart';
 import 'package:p2p_chat/src/rust/frb_generated.dart';
 
 Future<void> main() async {
@@ -13,14 +13,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: const Text('flutter_rust_bridge quickstart')),
-        body: Center(
-          child: Text(
-            'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
-          ),
-        ),
-      ),
+      title: 'P2P Secure Chat',
+      theme: ThemeData.dark(),
+      home: const IdentitySetupScreen(),
     );
   }
 }

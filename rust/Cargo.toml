@@ -8,6 +8,11 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = "=2.11.1"
+bip39 = "2.0"
+rand = "0.8"
+local-ip-address = "0.6"
+ureq = { version = "2.10", features = ["json"] }
+network-interface = "2.0"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
