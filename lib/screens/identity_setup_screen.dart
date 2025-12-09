@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/src/rust/api/identity.dart';
-import 'package:p2p_chat/screens/network_info_screen.dart';
+import 'package:p2p_chat/screens/home_screen.dart';
 
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
@@ -127,10 +127,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               ElevatedButton(
                 onPressed: _hasConfirmed
                     ? () {
-                        // Navigate to network info screen
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (context) => const NetworkInfoScreen(),
+                            builder: (context) => const HomeScreen(),
                           ),
                         );
                       }
