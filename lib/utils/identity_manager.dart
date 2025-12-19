@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:p2p_chat/utils/peer_manager.dart';
 import 'dart:convert';
 
 class Identity {
@@ -130,6 +131,9 @@ class IdentityManager {
     final identities = await getAllIdentities();
     identities.removeWhere((i) => i.id == identityId);
     await _saveIdentities(identities);
+
+    // Delete all peers associated with this identity
+    await PeerManager().deletePeersForIdentity(identityId);
 
     // If deleted current identity, clear it
     final currentId = await _secureStorage.read(key: _currentIdentityKey);
