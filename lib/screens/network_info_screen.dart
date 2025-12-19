@@ -210,265 +210,263 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Icon(
-                        Icons.network_check,
-                        size: 60,
-                        color: Colors.deepPurple,
-                      ),
-                      if (_cacheAgeMinutes != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(
+                      Icons.network_check,
+                      size: 60,
+                      color: Colors.deepPurple,
+                    ),
+                    if (_cacheAgeMinutes != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _cacheAgeMinutes! < 5
+                              ? Colors.green.withOpacity(0.2)
+                              : Colors.orange.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
                             color: _cacheAgeMinutes! < 5
-                                ? Colors.green.withOpacity(0.2)
-                                : Colors.orange.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
+                                ? Colors.green
+                                : Colors.orange,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
                               color: _cacheAgeMinutes! < 5
                                   ? Colors.green
                                   : Colors.orange,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                size: 16,
+                            const SizedBox(width: 4),
+                            Text(
+                              'Cached ${_cacheAgeMinutes}m ago',
+                              style: TextStyle(
+                                fontSize: 12,
                                 color: _cacheAgeMinutes! < 5
                                     ? Colors.green
                                     : Colors.orange,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Cached ${_cacheAgeMinutes}m ago',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: _cacheAgeMinutes! < 5
-                                      ? Colors.green
-                                      : Colors.orange,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () => _loadNetworkInfo(forceRefresh: true),
-                        tooltip: 'Refresh',
-                        color: Colors.deepPurple,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Your Network Addresses',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-                  
-                  // Public IPs Section
-                  const Text(
-                    'Public Addresses',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildIPCard(
-                    title: 'Public IPv4',
-                    subtitle: 'Internet-visible address',
-                    ipAddress: _networkInfo?.publicIpv4,
-                    icon: Icons.public,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildIPCard(
-                    title: 'Public IPv6',
-                    subtitle: 'Internet-visible address',
-                    ipAddress: _networkInfo?.publicIpv6,
-                    icon: Icons.public,
-                    color: Colors.deepOrange,
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Local IPs Section
-                  const Text(
-                    'Local Addresses',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildIPCard(
-                    title: 'Local IPv4',
-                    subtitle: 'Same network only',
-                    ipAddress: _networkInfo?.localIpv4,
-                    icon: Icons.router,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildIPCard(
-                    title: 'Local IPv6',
-                    subtitle: 'Same network only',
-                    ipAddress: _networkInfo?.localIpv6,
-                    icon: Icons.router,
-                    color: Colors.lightBlue,
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // LAN Details Section
-                  const Text(
-                    'LAN Details',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 4,
-                    color: Colors.grey[900],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          _buildInfoRow('Interface', _networkInfo?.interfaceName),
-                          _buildInfoRow('Subnet Mask', _networkInfo?.subnetMask),
-                          _buildInfoRow('Network Prefix', _networkInfo?.networkPrefix),
-                          _buildInfoRow('Broadcast', _networkInfo?.broadcastAddress),
-                          _buildInfoRow('Gateway', _networkInfo?.gateway),
-                          _buildInfoRow('MAC Address', _networkInfo?.macAddress),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Peer Subnet Checker
-                  const Text(
-                    'Check Peer Subnet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 4,
-                    color: Colors.grey[900],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _peerIpController,
-                            decoration: InputDecoration(
-                              labelText: 'Peer IP Address',
-                              hintText: 'e.g., 192.168.1.100',
-                              border: const OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.check_circle),
-                                onPressed: _checkPeerSubnet,
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                            onSubmitted: (_) => _checkPeerSubnet(),
-                          ),
-                          if (_isSameSubnet != null) ...[
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _isSameSubnet! 
-                                    ? Colors.green.withOpacity(0.2)
-                                    : Colors.red.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _isSameSubnet! ? Colors.green : Colors.red,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    _isSameSubnet! ? Icons.check_circle : Icons.cancel,
-                                    color: _isSameSubnet! ? Colors.green : Colors.red,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _isSameSubnet!
-                                          ? 'Peer is on the SAME local network'
-                                          : 'Peer is on a DIFFERENT network',
-                                      style: TextStyle(
-                                        color: _isSameSubnet! ? Colors.green : Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: Colors.amber),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Use network prefix to automatically detect peers on the same LAN',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.amber[200],
-                            ),
-                          ),
                         ),
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () => _loadNetworkInfo(forceRefresh: true),
+                      tooltip: 'Refresh',
+                      color: Colors.deepPurple,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Your Network Addresses',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+                
+                // Public IPs Section
+                const Text(
+                  'Public Addresses',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildIPCard(
+                  title: 'Public IPv4',
+                  subtitle: 'Internet-visible address',
+                  ipAddress: _networkInfo?.publicIpv4,
+                  icon: Icons.public,
+                  color: Colors.orange,
+                ),
+                const SizedBox(height: 12),
+                _buildIPCard(
+                  title: 'Public IPv6',
+                  subtitle: 'Internet-visible address',
+                  ipAddress: _networkInfo?.publicIpv6,
+                  icon: Icons.public,
+                  color: Colors.deepOrange,
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Local IPs Section
+                const Text(
+                  'Local Addresses',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildIPCard(
+                  title: 'Local IPv4',
+                  subtitle: 'Same network only',
+                  ipAddress: _networkInfo?.localIpv4,
+                  icon: Icons.router,
+                  color: Colors.blue,
+                ),
+                const SizedBox(height: 12),
+                _buildIPCard(
+                  title: 'Local IPv6',
+                  subtitle: 'Same network only',
+                  ipAddress: _networkInfo?.localIpv6,
+                  icon: Icons.router,
+                  color: Colors.lightBlue,
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // LAN Details Section
+                const Text(
+                  'LAN Details',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Card(
+                  elevation: 4,
+                  color: Colors.grey[900],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        _buildInfoRow('Interface', _networkInfo?.interfaceName),
+                        _buildInfoRow('Subnet Mask', _networkInfo?.subnetMask),
+                        _buildInfoRow('Network Prefix', _networkInfo?.networkPrefix),
+                        _buildInfoRow('Broadcast', _networkInfo?.broadcastAddress),
+                        _buildInfoRow('Gateway', _networkInfo?.gateway),
+                        _buildInfoRow('MAC Address', _networkInfo?.macAddress),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Peer Subnet Checker
+                const Text(
+                  'Check Peer Subnet',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Card(
+                  elevation: 4,
+                  color: Colors.grey[900],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: _peerIpController,
+                          decoration: InputDecoration(
+                            labelText: 'Peer IP Address',
+                            hintText: 'e.g., 192.168.1.100',
+                            border: const OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.check_circle),
+                              onPressed: _checkPeerSubnet,
+                            ),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onSubmitted: (_) => _checkPeerSubnet(),
+                        ),
+                        if (_isSameSubnet != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _isSameSubnet! 
+                                  ? Colors.green.withOpacity(0.2)
+                                  : Colors.red.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _isSameSubnet! ? Colors.green : Colors.red,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _isSameSubnet! ? Icons.check_circle : Icons.cancel,
+                                  color: _isSameSubnet! ? Colors.green : Colors.red,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _isSameSubnet!
+                                        ? 'Peer is on the SAME local network'
+                                        : 'Peer is on a DIFFERENT network',
+                                    style: TextStyle(
+                                      color: _isSameSubnet! ? Colors.green : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 30),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Use network prefix to automatically detect peers on the same LAN',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.amber[200],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-    );
+          );
   }
 }

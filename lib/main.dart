@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2p_chat/screens/identity_selection_screen.dart';
-import 'package:p2p_chat/screens/home_screen.dart';
+import 'package:p2p_chat/screens/chat_screen.dart';
 import 'package:p2p_chat/widgets/pin_lock_screen.dart';
 import 'package:p2p_chat/src/rust/frb_generated.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
@@ -212,6 +212,6 @@ class _AppWithLifecycleState extends State<AppWithLifecycle> with WidgetsBinding
 
   @override
   Widget build(BuildContext context) {
-    return const HomeScreen();
+    return const ChatScreen();
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
 import 'package:p2p_chat/utils/pin_manager.dart';
 import 'package:p2p_chat/screens/identity_setup_screen.dart';
-import 'package:p2p_chat/screens/home_screen.dart';
+import 'package:p2p_chat/screens/chat_screen.dart';
 import 'package:p2p_chat/widgets/pin_setup_dialog.dart';
 
 class IdentitySelectionScreen extends StatefulWidget {
@@ -63,12 +63,12 @@ class _IdentitySelectionScreenState extends State<IdentitySelectionScreen> {
 
       if (pinSet == true && mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const ChatScreen()),
         );
       }
     } else if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const ChatScreen()),
       );
     }
   }

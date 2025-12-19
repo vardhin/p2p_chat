@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/src/rust/api/identity.dart';
-import 'package:p2p_chat/screens/home_screen.dart';
+import 'package:p2p_chat/screens/chat_screen.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
 import 'package:p2p_chat/utils/pin_manager.dart';
 import 'package:p2p_chat/widgets/pin_setup_dialog.dart';

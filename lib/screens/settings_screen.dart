@@ -139,184 +139,178 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 10),
-          _buildSection(
-            title: 'Identity',
-            children: [
-              _buildListTile(
-                icon: Icons.fingerprint,
-                title: 'View Seed Phrase',
-                subtitle: 'Backup your identity',
-                onTap: _showSeedPhrase,
-              ),
-              _buildListTile(
-                icon: Icons.key,
-                title: 'Export Keys',
-                subtitle: 'Export cryptographic keys',
-                onTap: () {
-                  // TODO: Export keys
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon!')),
-                  );
-                },
-              ),
-            ],
-          ),
-          const Divider(),
-          _buildSection(
-            title: 'Privacy & Security',
-            children: [
-              _buildListTile(
-                icon: Icons.lock,
-                title: 'Auto-lock',
-                subtitle: 'Lock app with PIN after inactivity',
-                trailing: Switch(
-                  value: _autoLockEnabled,
-                  onChanged: _toggleAutoLock,
-                ),
-              ),
-              _buildListTile(
-                icon: Icons.pin,
-                title: 'Change PIN',
-                subtitle: 'Update your lock PIN',
-                onTap: () async {
-                  final result = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => const PinSetupDialog(),
-                  );
-                  if (result == true && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('PIN updated')),
-                    );
-                  }
-                },
-              ),
-              _buildListTile(
-                icon: Icons.visibility_off,
-                title: 'Hide IP Address',
-                subtitle: 'Use Tor or VPN',
-                trailing: Switch(
-                  value: false,
-                  onChanged: (value) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon!')),
-                    );
-                  },
-                ),
-              ),
-              _buildListTile(
-                icon: Icons.delete_forever,
-                title: 'Clear Cache',
-                subtitle: 'Delete cached network data',
-                onTap: () async {
-                  await _cache.clearCache();
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Cache cleared')),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
-          const Divider(),
-          _buildSection(
-            title: 'Network',
-            children: [
-              _buildListTile(
-                icon: Icons.vpn_key,
-                title: 'Port Settings',
-                subtitle: 'Configure P2P ports',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon!')),
-                  );
-                },
-              ),
-              _buildListTile(
-                icon: Icons.dns,
-                title: 'STUN/TURN Servers',
-                subtitle: 'NAT traversal configuration',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Coming soon!')),
-                  );
-                },
-              ),
-            ],
-          ),
-          const Divider(),
-          _buildSection(
-            title: 'About',
-            children: [
-              _buildListTile(
-                icon: Icons.info,
-                title: 'App Version',
-                subtitle: '1.0.0',
-              ),
-              _buildListTile(
-                icon: Icons.code,
-                title: 'Open Source',
-                subtitle: 'github.com/vardhin/p2p_chat',
-                onTap: _openGitHub,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Reset App?'),
-                    content: const Text(
-                      'This will delete all data including your identity. This action cannot be undone.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _cache.clearAll();
-                          await _pinManager.removePin();
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('App reset complete')),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        child: const Text('Reset'),
-                      ),
-                    ],
-                  ),
+    return ListView(
+      children: [
+        const SizedBox(height: 10),
+        _buildSection(
+          title: 'Identity',
+          children: [
+            _buildListTile(
+              icon: Icons.fingerprint,
+              title: 'View Seed Phrase',
+              subtitle: 'Backup your identity',
+              onTap: _showSeedPhrase,
+            ),
+            _buildListTile(
+              icon: Icons.key,
+              title: 'Export Keys',
+              subtitle: 'Export cryptographic keys',
+              onTap: () {
+                // TODO: Export keys
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Coming soon!')),
                 );
               },
-              icon: const Icon(Icons.restore),
-              label: const Text('Reset App'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: const EdgeInsets.all(16),
+            ),
+          ],
+        ),
+        const Divider(),
+        _buildSection(
+          title: 'Privacy & Security',
+          children: [
+            _buildListTile(
+              icon: Icons.lock,
+              title: 'Auto-lock',
+              subtitle: 'Lock app with PIN after inactivity',
+              trailing: Switch(
+                value: _autoLockEnabled,
+                onChanged: _toggleAutoLock,
               ),
             ),
+            _buildListTile(
+              icon: Icons.pin,
+              title: 'Change PIN',
+              subtitle: 'Update your lock PIN',
+              onTap: () async {
+                final result = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => const PinSetupDialog(),
+                );
+                if (result == true && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('PIN updated')),
+                  );
+                }
+              },
+            ),
+            _buildListTile(
+              icon: Icons.visibility_off,
+              title: 'Hide IP Address',
+              subtitle: 'Use Tor or VPN',
+              trailing: Switch(
+                value: false,
+                onChanged: (value) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Coming soon!')),
+                  );
+                },
+              ),
+            ),
+            _buildListTile(
+              icon: Icons.delete_forever,
+              title: 'Clear Cache',
+              subtitle: 'Delete cached network data',
+              onTap: () async {
+                await _cache.clearCache();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cache cleared')),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+        const Divider(),
+        _buildSection(
+          title: 'Network',
+          children: [
+            _buildListTile(
+              icon: Icons.vpn_key,
+              title: 'Port Settings',
+              subtitle: 'Configure P2P ports',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Coming soon!')),
+                );
+              },
+            ),
+            _buildListTile(
+              icon: Icons.dns,
+              title: 'STUN/TURN Servers',
+              subtitle: 'NAT traversal configuration',
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Coming soon!')),
+                );
+              },
+            ),
+          ],
+        ),
+        const Divider(),
+        _buildSection(
+          title: 'About',
+          children: [
+            _buildListTile(
+              icon: Icons.info,
+              title: 'App Version',
+              subtitle: '1.0.0',
+            ),
+            _buildListTile(
+              icon: Icons.code,
+              title: 'Open Source',
+              subtitle: 'github.com/vardhin/p2p_chat',
+              onTap: _openGitHub,
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Reset App?'),
+                  content: const Text(
+                    'This will delete all data including your identity. This action cannot be undone.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await _cache.clearAll();
+                        await _pinManager.removePin();
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('App reset complete')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text('Reset'),
+                    ),
+                  ],
+                ),
+              );
+            },
+            icon: const Icon(Icons.restore),
+            label: const Text('Reset App'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.all(16),
+            ),
           ),
-          const SizedBox(height: 20),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+      ],
     );
   }
 
