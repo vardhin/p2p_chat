@@ -4,6 +4,7 @@ import 'package:p2p_chat/screens/settings_screen.dart';
 import 'package:p2p_chat/screens/network_info_screen.dart';
 import 'package:p2p_chat/screens/profile_screen.dart';
 import 'package:p2p_chat/screens/identity_selection_screen.dart';
+import 'package:p2p_chat/screens/peer_chat_screen.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
 import 'package:p2p_chat/utils/peer_manager.dart';
 import 'package:p2p_chat/widgets/add_peer_dialog.dart';
@@ -327,21 +328,17 @@ class _ChatHomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chat, color: Colors.deepPurple),
-                  onPressed: () {
-                    // TODO: Open chat with peer
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => onDeletePeer(peer),
-                ),
-              ],
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => onDeletePeer(peer),
             ),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PeerChatScreen(peer: peer),
+                ),
+              );
+            },
           ),
         );
       },
