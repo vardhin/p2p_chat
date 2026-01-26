@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:p2p_chat/screens/settings_screen.dart';
 import 'package:p2p_chat/screens/network_info_screen.dart';
 import 'package:p2p_chat/screens/profile_screen.dart';
+import 'package:p2p_chat/screens/chat_detail_screen.dart';
 import 'package:p2p_chat/screens/identity_selection_screen.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
 import 'package:p2p_chat/utils/peer_manager.dart';
@@ -186,6 +187,7 @@ class _ChatScreenState extends State<ChatScreen> {
           const SettingsScreen(),
           _ChatHomeScreen(
             peers: _peers,
+            currentIdentity: _currentIdentity,
             onAddPeer: _showAddPeerDialog,
             onDeletePeer: _deletePeer,
           ),
@@ -231,11 +233,13 @@ class _ChatHomeScreen extends StatelessWidget {
   final List<Peer> peers;
   final VoidCallback onAddPeer;
   final Function(Peer) onDeletePeer;
+  final Identity? currentIdentity;
 
   const _ChatHomeScreen({
     required this.peers,
     required this.onAddPeer,
     required this.onDeletePeer,
+    this.currentIdentity,
   });
 
   @override
@@ -332,9 +336,16 @@ class _ChatHomeScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chat, color: Colors.deepPurple),
-                  onPressed: () {
-                    // TODO: Open chat with peer
-                  },
+                  onPressed: currentIdentity != null ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailScreen(
+                          peer: peer,
+                          currentIdentity: currentIdentity!,
+                        ),
+                      ),
+                    );
+                  } : null,
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),

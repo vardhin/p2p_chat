@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:p2p_chat/src/rust/api/crypto.dart';
 import 'package:p2p_chat/src/rust/api/network.dart';
+import 'package:p2p_chat/utils/identity_manager.dart';
 
 class NetworkDataCache {
   static final NetworkDataCache _instance = NetworkDataCache._internal();
@@ -65,11 +66,14 @@ class NetworkDataCache {
   }
 
   /// Cache network data with encryption
-  Future<void> cacheNetworkData(NetworkInfo networkInfo) async {
+  Future<void> cacheNetworkData(NetworkInfo networkInfo, {String? seedPhrase}) async {
     try {
-      final seedPhrase = await getSeedPhrase();
-      if (seedPhrase == null) {
-        throw Exception('Seed phrase not found');
+      // Get seed phrase from current identity if not provided
+      String? phrase = seedPhrase;
+      phrase ??= (await IdentityManager().getCurrentIdentity())?.seedPhrase;
+      
+      if (phrase == null) {
+        throw Exception('Seed phrase not found. Please create an identity first.');
       }
 
       // Convert NetworkInfo to JSON
@@ -89,7 +93,7 @@ class NetworkDataCache {
       // Encrypt data
       final encryptedData = encryptNetworkData(
         data: jsonData,
-        seedPhrase: seedPhrase,
+        seedPhrase: phrase,
       );
 
       final db = await database;
@@ -109,14 +113,17 @@ class NetworkDataCache {
   }
 
   /// Retrieve cached network data if still valid
-  Future<NetworkInfo?> getCachedNetworkData({bool forceRefresh = false}) async {
+  Future<NetworkInfo?> getCachedNetworkData({bool forceRefresh = false, String? seedPhrase}) async {
     try {
       if (forceRefresh) {
         return null; // Force refresh, don't use cache
       }
 
-      final seedPhrase = await getSeedPhrase();
-      if (seedPhrase == null) {
+      // Get seed phrase from current identity if not provided
+      String? phrase = seedPhrase;
+      phrase ??= (await IdentityManager().getCurrentIdentity())?.seedPhrase;
+      
+      if (phrase == null) {
         return null;
       }
 
@@ -145,7 +152,7 @@ class NetworkDataCache {
       final encryptedData = results[0]['encrypted_data'] as List<int>;
       final decryptedJson = decryptNetworkData(
         encryptedData: Uint8List.fromList(encryptedData),
-        seedPhrase: seedPhrase,
+        seedPhrase: phrase,
       );
 
       final Map<String, dynamic> jsonData = jsonDecode(decryptedJson);

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p2p_chat/utils/network_data_cache.dart';
 import 'package:p2p_chat/utils/pin_manager.dart';
+import 'package:p2p_chat/utils/identity_manager.dart';
 import 'package:p2p_chat/widgets/pin_setup_dialog.dart';
+import 'package:p2p_chat/screens/crypto_keys_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _autoLockEnabled = false;
   final _cache = NetworkDataCache();
   final _pinManager = PinManager();
+  final _identityManager = IdentityManager();
 
   @override
   void initState() {
@@ -29,7 +32,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _showSeedPhrase() async {
-    final seedPhrase = await _cache.getSeedPhrase();
+    final identity = await _identityManager.getCurrentIdentity();
+    final seedPhrase = identity?.seedPhrase;
     
     if (seedPhrase == null) {
       if (mounted) {
@@ -151,15 +155,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'Backup your identity',
               onTap: _showSeedPhrase,
             ),
-            _buildListTile(
-              icon: Icons.key,
-              title: 'Export Keys',
-              subtitle: 'Export cryptographic keys',
-              onTap: () {
-                // TODO: Export keys
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Coming soon!')),
-                );
+            FutureBuilder<Identity?>(
+              future: _identityManager.getCurrentIdentity(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data != null) {
+                  return _buildListTile(
+                    icon: Icons.key,
+                    title: 'Cryptographic Keys',
+                    subtitle: 'View and export crypto keys',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => CryptoKeysScreen(
+                            identity: snapshot.data!,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+                return const SizedBox.shrink();
               },
             ),
           ],
