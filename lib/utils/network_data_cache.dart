@@ -117,7 +117,7 @@ class NetworkDataCache {
     try {
       if (forceRefresh) {
         return null; // Force refresh, don't use cache
-      }
+      }'package:p2p_chat/utils/identity_manager.dart'
 
       // Get seed phrase from current identity if not provided
       String? phrase = seedPhrase;
