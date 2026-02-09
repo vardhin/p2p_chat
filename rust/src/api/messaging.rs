@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use std::net::SocketAddr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Message types for P2P communication
@@ -64,6 +63,7 @@ impl P2PMessage {
 
 /// Connection state for a peer
 #[derive(Debug, Clone, PartialEq)]
+#[flutter_rust_bridge::frb(non_opaque)]
 pub enum ConnectionState {
     /// Not connected
     Disconnected,
@@ -76,18 +76,20 @@ pub enum ConnectionState {
 }
 
 /// Represents an active P2P connection
+/// Uses String for addresses so flutter_rust_bridge can serialize them.
 #[derive(Debug, Clone)]
+#[flutter_rust_bridge::frb(opaque)]
 pub struct P2PConnection {
     pub peer_id: String,
-    pub local_addr: SocketAddr,
-    pub remote_addr: SocketAddr,
+    pub local_addr: String,
+    pub remote_addr: String,
     pub state: ConnectionState,
     pub last_ping: u64,
     pub sequence_num: u32,
 }
 
 impl P2PConnection {
-    pub fn new(peer_id: String, local_addr: SocketAddr, remote_addr: SocketAddr) -> Self {
+    pub fn new(peer_id: String, local_addr: String, remote_addr: String) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
