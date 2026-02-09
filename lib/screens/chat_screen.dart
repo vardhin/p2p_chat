@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:p2p_chat/screens/settings_screen.dart';
 import 'package:p2p_chat/screens/network_info_screen.dart';
 import 'package:p2p_chat/screens/profile_screen.dart';
+import 'package:p2p_chat/screens/chat_detail_screen.dart';
 import 'package:p2p_chat/screens/identity_selection_screen.dart';
 import 'package:p2p_chat/screens/peer_chat_screen.dart';
 import 'package:p2p_chat/utils/identity_manager.dart';
@@ -187,6 +188,7 @@ class _ChatScreenState extends State<ChatScreen> {
           const SettingsScreen(),
           _ChatHomeScreen(
             peers: _peers,
+            currentIdentity: _currentIdentity,
             onAddPeer: _showAddPeerDialog,
             onDeletePeer: _deletePeer,
           ),
@@ -232,11 +234,13 @@ class _ChatHomeScreen extends StatelessWidget {
   final List<Peer> peers;
   final VoidCallback onAddPeer;
   final Function(Peer) onDeletePeer;
+  final Identity? currentIdentity;
 
   const _ChatHomeScreen({
     required this.peers,
     required this.onAddPeer,
     required this.onDeletePeer,
+    this.currentIdentity,
   });
 
   @override
@@ -328,9 +332,27 @@ class _ChatHomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => onDeletePeer(peer),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chat, color: Colors.deepPurple),
+                  onPressed: currentIdentity != null ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailScreen(
+                          peer: peer,
+                          currentIdentity: currentIdentity!,
+                        ),
+                      ),
+                    );
+                  } : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => onDeletePeer(peer),
+                ),
+              ],
             ),
             onTap: () {
               Navigator.of(context).push(

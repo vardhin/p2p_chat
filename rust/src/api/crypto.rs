@@ -1,5 +1,5 @@
 use aes_gcm::{
-    aead::{Aead, KeyInit, OsRng},
+    aead::{Aead, KeyInit},
     Aes256Gcm, Nonce, Key
 };
 use sha2::{Sha256, Digest};
