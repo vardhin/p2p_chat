@@ -33,6 +33,14 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Flutter Rust Bridge generated files
+lib/src/rust/api/*.dart
+lib/src/rust/frb_generated.dart
+lib/src/rust/frb_generated.io.dart
+lib/src/rust/frb_generated.web.dart
+lib/src/rust/lib.dart
+rust/src/frb_generated.rs
+
 # Symbolication related
 app.*.symbols
 
@@ -43,3 +51,4 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
